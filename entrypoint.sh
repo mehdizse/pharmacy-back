@@ -7,26 +7,23 @@ echo "🐳 Démarrage du conteneur Django Pharmacie..."
 
 # Attendre que la base de données soit disponible
 if [ ! -z "$DATABASE_URL" ]; then
-    # Extraire l'hôte et le port de DATABASE_URL avec le bon format pour Render
-    # Format: postgresql://user:password@host:port/database
-    DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
-    DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+    # Extraire l'hôte et le port de DATABASE_URL avec python pour plus de fiabilité
+    python3 -c "
+import os
+from urllib.parse import urlparse
+url = os.environ.get('DATABASE_URL', '')
+if url:
+    parsed = urlparse(url)
+    host = parsed.hostname
+    port = str(parsed.port) if parsed.port else '5432'
+    print(f'export DB_HOST={host}')
+    print(f'export DB_PORT={port}')
+    print(f'Debug: Full URL={url}')
+    print(f'Debug: hostname={host}, port={port}')
+" > /tmp/db_vars
     
-    # Alternative extraction si la première méthode échoue
-    if [ -z "$DB_HOST" ]; then
-        DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^@:]*\):.*/\1/p')
-    fi
-    if [ -z "$DB_PORT" ]; then
-        DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
-    fi
-    
-    # Si toujours vide, utiliser les valeurs par défaut PostgreSQL
-    if [ -z "$DB_HOST" ]; then
-        DB_HOST="localhost"
-    fi
-    if [ -z "$DB_PORT" ]; then
-        DB_PORT="5432"
-    fi
+    # Charger les variables extraites
+    source /tmp/db_vars
     
     echo "📊 DATABASE_URL détecté, tentative de connexion à $DB_HOST:$DB_PORT..."
     echo "🔗 URL: $(echo $DATABASE_URL | sed 's/:[^@]*@/:****@/')"
