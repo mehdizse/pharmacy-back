@@ -1,0 +1,215 @@
+/* Thème personnalisé pour l'admin de la pharmacie */
+
+/* Header principal */
+#header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-bottom: 3px solid #428bca !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+#branding h1, #branding h1 a:link, #branding h1 a:visited {
+    color: #ffffff !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+}
+
+/* Navigation */
+.nav-tabs {
+    border-bottom: 2px solid #428bca !important;
+}
+
+.nav-tabs > li > a {
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    color: #495057 !important;
+    font-weight: 500 !important;
+    border-radius: 8px 8px 0 0 !important;
+    margin-right: 3px !important;
+}
+
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+    background: #428bca !important;
+    color: #ffffff !important;
+    border-color: #428bca !important;
+    border-bottom-color: transparent !important;
+}
+
+/* Boutons */
+.button, input[type=submit], input[type=button], .submit-row input {
+    background: linear-gradient(135deg, #428bca 0%, #357abd 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+    transition: all 0.3s ease !important;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: linear-gradient(135deg, #357abd 0%, #285a8c 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3) !important;
+}
+
+.default:link, .default:visited, .default:active, .default:hover {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%) !important;
+    color: #ffffff !important;
+}
+
+.delete:link, .delete:visited, .delete:active, .delete:hover {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+    color: #ffffff !important;
+}
+
+/* Tableaux */
+#changelist table {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+}
+
+#changelist table thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-bottom: 2px solid #428bca !important;
+    color: #495057 !important;
+    font-weight: 600 !important;
+    padding: 12px !important;
+}
+
+#changelist table tbody tr:nth-child(even) {
+    background-color: #f8f9fa !important;
+}
+
+#changelist table tbody tr:hover {
+    background-color: #e3f2fd !important;
+    transition: background-color 0.3s ease !important;
+}
+
+/* Formulaire */
+.form-row {
+    border-bottom: 1px solid #e9ecef !important;
+    padding: 15px 0 !important;
+}
+
+.form-row:last-child {
+    border-bottom: none !important;
+}
+
+.form-row label {
+    color: #495057 !important;
+    font-weight: 600 !important;
+}
+
+.form-row input, .form-row select, .form-row textarea {
+    border: 2px solid #e9ecef !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    transition: border-color 0.3s ease !important;
+}
+
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    border-color: #428bca !important;
+    box-shadow: 0 0 0 3px rgba(66, 139, 202, 0.1) !important;
+    outline: none !important;
+}
+
+/* Messages */
+.messagelist {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.messagelist li {
+    padding: 12px 20px !important;
+    margin-bottom: 5px !important;
+    border-radius: 6px !important;
+}
+
+.messagelist li.success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+    color: #155724 !important;
+    border-left: 4px solid #28a745 !important;
+}
+
+.messagelist li.warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%) !important;
+    color: #856404 !important;
+    border-left: 4px solid #ffc107 !important;
+}
+
+.messagelist li.error {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%) !important;
+    color: #721c24 !important;
+    border-left: 4px solid #dc3545 !important;
+}
+
+/* Page d'accueil */
+.dashboard .module {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+    margin-bottom: 20px !important;
+    overflow: hidden !important;
+}
+
+.dashboard .module h2 {
+    background: linear-gradient(135deg, #428bca 0%, #357abd 100%) !important;
+    color: #ffffff !important;
+    padding: 15px 20px !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+}
+
+.dashboard .module a {
+    color: #428bca !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    transition: color 0.3s ease !important;
+}
+
+.dashboard .module a:hover {
+    color: #357abd !important;
+    text-decoration: underline !important;
+}
+
+/* Footer */
+#footer {
+    background: #f8f9fa !important;
+    border-top: 1px solid #e9ecef !important;
+    color: #6c757d !important;
+    text-align: center !important;
+    padding: 20px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #branding h1 {
+        font-size: 18px !important;
+    }
+    
+    .button, input[type=submit], input[type=button] {
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+    }
+    
+    #changelist table {
+        font-size: 14px !important;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard .module, #changelist table {
+    animation: fadeIn 0.5s ease-out !important;
+}
