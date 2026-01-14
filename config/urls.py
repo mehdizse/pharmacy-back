@@ -18,9 +18,30 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+def api_info(request):
+    """API root endpoint with basic information"""
+    return JsonResponse({
+        'message': 'Pharmacy Backend API',
+        'version': '1.0.0',
+        'docs': '/api/docs/',
+        'schema': '/api/schema/',
+        'health': '/api/health/',
+        'endpoints': {
+            'auth': '/api/auth/',
+            'suppliers': '/api/suppliers/',
+            'invoices': '/api/invoices/',
+            'credit_notes': '/api/credit-notes/',
+            'reports': '/api/reports/'
+        }
+    })
+
 urlpatterns = [
+    # Root endpoint
+    path('', api_info, name='api-info'),
+    
     path('admin/', admin.site.urls),
     
     # API Documentation

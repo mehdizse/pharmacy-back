@@ -56,7 +56,7 @@ COPY . .
 RUN chmod +x ./entrypoint.sh
 
 # Création des répertoires nécessaires et permissions
-RUN mkdir -p /app/staticfiles /app/logs /app/media && \
+RUN mkdir -p /app/staticfiles /app/logs /app/media /app/static && \
     chown -R django:django /app
 
 # Changement vers l'utilisateur non-root

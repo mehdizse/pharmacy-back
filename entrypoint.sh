@@ -7,9 +7,29 @@ echo "🐳 Démarrage du conteneur Django Pharmacie..."
 
 # Attendre que la base de données soit disponible
 if [ ! -z "$DATABASE_URL" ]; then
-    # Extraire l'hôte et le port de DATABASE_URL
+    # Extraire l'hôte et le port de DATABASE_URL avec le bon format pour Render
+    # Format: postgresql://user:password@host:port/database
     DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\):.*/\1/p')
     DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+    
+    # Alternative extraction si la première méthode échoue
+    if [ -z "$DB_HOST" ]; then
+        DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^@:]*\):.*/\1/p')
+    fi
+    if [ -z "$DB_PORT" ]; then
+        DB_PORT=$(echo $DATABASE_URL | sed -n 's/.*:\([0-9]*\)\/.*/\1/p')
+    fi
+    
+    # Si toujours vide, utiliser les valeurs par défaut PostgreSQL
+    if [ -z "$DB_HOST" ]; then
+        DB_HOST="localhost"
+    fi
+    if [ -z "$DB_PORT" ]; then
+        DB_PORT="5432"
+    fi
+    
+    echo "📊 DATABASE_URL détecté, tentative de connexion à $DB_HOST:$DB_PORT..."
+    echo "🔗 URL: $(echo $DATABASE_URL | sed 's/:[^@]*@/:****@/')"
     
     if [ ! -z "$DB_HOST" ] && [ ! -z "$DB_PORT" ]; then
         echo "⏳ Attente de la base de données sur $DB_HOST:$DB_PORT..."
