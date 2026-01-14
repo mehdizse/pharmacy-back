@@ -52,6 +52,9 @@ COPY --from=build /usr/local/bin /usr/local/bin
 # Copie du code source de l'application
 COPY . .
 
+# Rendre le script d'entrée exécutable
+RUN chmod +x ./entrypoint.sh
+
 # Création des répertoires nécessaires et permissions
 RUN mkdir -p /app/staticfiles /app/logs /app/media && \
     chown -R django:django /app

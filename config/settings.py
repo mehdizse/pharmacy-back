@@ -1,5 +1,6 @@
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -84,19 +85,26 @@ WSGI_APPLICATION = "config.wsgi.application"
 # ======================
 # DATABASE
 # ======================
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="pharmacy_db"),
-        "USER": config("DB_USER", default="postgres"),
-        "PASSWORD": config("DB_PASSWORD", default="password"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
-        "OPTIONS": {
-            "connect_timeout": 60,
+# Priorité à DATABASE_URL (utilisé par Render et autres plateformes)
+if config("DATABASE_URL", default=None):
+    DATABASES = {
+        "default": dj_database_url.parse(config("DATABASE_URL"))
+    }
+else:
+    # Configuration fallback avec variables séparées
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME", default="pharmacy_db"),
+            "USER": config("DB_USER", default="postgres"),
+            "PASSWORD": config("DB_PASSWORD", default="password"),
+            "HOST": config("DB_HOST", default="localhost"),
+            "PORT": config("DB_PORT", default="5432"),
+            "OPTIONS": {
+                "connect_timeout": 60,
+            }
         }
     }
-}
 
 # ======================
 # AUTH
