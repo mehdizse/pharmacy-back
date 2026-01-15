@@ -72,14 +72,19 @@ python manage.py migrate --noinput || echo "⚠️ Erreur lors des migrations, c
 # Créer le superutilisateur si nécessaire (uniquement en développement)
 if [ "$DJANGO_CREATE_SUPERUSER" = "true" ]; then
     echo "👤 Création du superutilisateur..."
+    # Utiliser les variables d'environnement ou les valeurs par défaut
+    SUPERUSER_USERNAME=${SUPERUSER_USERNAME:-"admin"}
+    SUPERUSER_EMAIL=${SUPERUSER_EMAIL:-"admin@example.com"}
+    SUPERUSER_PASSWORD=${SUPERUSER_PASSWORD:-"admin123"}
+    
     python manage.py shell << EOF
 from django.contrib.auth import get_user_model
 User = get_user_model()
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
-    print('Superutilisateur créé: admin/admin123')
+if not User.objects.filter(username='$SUPERUSER_USERNAME').exists():
+    User.objects.create_superuser('$SUPERUSER_USERNAME', '$SUPERUSER_EMAIL', '$SUPERUSER_PASSWORD')
+    print('Superutilisateur créé: $SUPERUSER_USERNAME/$SUPERUSER_PASSWORD')
 else:
-    print('Superutilisateur admin existe déjà')
+    print('Superutilisateur $SUPERUSER_USERNAME existe déjà')
 EOF
 fi
 
