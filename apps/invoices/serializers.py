@@ -86,7 +86,8 @@ class InvoiceListSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = [
             'id', 'supplier_name', 'supplier_code', 'invoice_number',
-            'net_to_pay', 'invoice_date', 'due_date', 'status', 'month', 'year', 'is_active'
+            'net_to_pay', 'invoice_date', 'due_date', 'status', 'notes', 
+            'month', 'year', 'is_active', 'created_at'
         ]
 
 

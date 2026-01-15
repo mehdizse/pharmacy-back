@@ -117,8 +117,11 @@ def dashboard(request):
         recent_invoices = Invoice.objects.filter(
             is_active=True
         )
+        # Appliquer les mêmes filtres que pour les autres statistiques
         if supplier_id:
             recent_invoices = recent_invoices.filter(supplier_id=supplier_id)
+        if month and year:
+            recent_invoices = recent_invoices.filter(month=month, year=year)
         
         recent_invoices = recent_invoices.select_related('supplier').order_by('-created_at')[:10]
         
@@ -129,8 +132,13 @@ def dashboard(request):
                 'invoice_number': invoice.invoice_number,
                 'supplier_name': invoice.supplier.name,
                 'net_to_pay': float(invoice.net_to_pay),
+                'invoice_date': invoice.invoice_date.isoformat() if invoice.invoice_date else None,
+                'due_date': invoice.due_date.isoformat() if invoice.due_date else None,
+                'status': invoice.status,
+                'notes': invoice.notes,
                 'month': invoice.month,
                 'year': invoice.year,
+                'is_active': invoice.is_active,
                 'created_at': invoice.created_at.isoformat()
             })
         
