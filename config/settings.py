@@ -177,7 +177,7 @@ SPECTACULAR_SETTINGS = {
 # Configuration dynamique des CORS depuis les variables d'environnement
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000,http://127.0.0.1:3000,http://localhost:4200,http://127.0.0.1:4200,http://localhost:8000,http://127.0.0.1:8000,https://frontend-12uy.onrender.com",
+    default="http://localhost:3000,http://127.0.0.1:3000,http://localhost:4200,http://127.0.0.1:4200,http://localhost:8000,http://127.0.0.1:8000,http://167.86.69.173",
     cast=lambda v: [s.strip() for s in v.split(",")]
 )
 
@@ -192,7 +192,7 @@ CORS_ALLOW_CREDENTIALS = True
 # Configuration dynamique des CSRF trusted origins
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
-    default="http://127.0.0.1:8000,http://localhost:8000,http://localhost:4200,http://127.0.0.1:4200,https://frontend-12uy.onrender.com",
+    default="http://127.0.0.1:8000,http://localhost:8000,http://localhost:4200,http://127.0.0.1:4200,http://167.86.69.173",
     cast=lambda v: [s.strip() for s in v.split(",")]
 )
 
