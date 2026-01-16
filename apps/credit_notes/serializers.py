@@ -20,7 +20,7 @@ class CreditNoteSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'supplier', 'supplier_name', 'supplier_code',
             'invoice', 'invoice_id', 'invoice_number',
-            'credit_note_number', 'amount', 'credit_note_date', 'motif', 'status',
+            'credit_note_number', 'amount', 'credit_note_date', 'motif',
             'month', 'year', 'is_active', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'month', 'year', 'created_at', 'updated_at']
@@ -93,7 +93,7 @@ class CreditNoteListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'supplier_name', 'supplier_code', 'credit_note_number',
             'invoice_id', 'invoice_number',
-            'amount', 'credit_note_date', 'motif', 'status', 'month', 'year', 'is_active'
+            'amount', 'credit_note_date', 'motif', 'month', 'year', 'is_active'
         ]
 
 
@@ -106,7 +106,7 @@ class CreditNoteCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreditNote
         fields = [
-            'invoice', 'supplier', 'credit_note_number', 'amount', 'credit_note_date', 'motif', 'reason', 'status'
+            'invoice', 'supplier', 'credit_note_number', 'amount', 'credit_note_date', 'motif', 'reason'
         ]
 
     def validate(self, attrs):
@@ -166,7 +166,7 @@ class CreditNoteUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreditNote
         fields = [
-            'invoice', 'credit_note_number', 'amount', 'credit_note_date', 'motif', 'reason', 'status', 'is_active'
+            'invoice', 'credit_note_number', 'amount', 'credit_note_date', 'motif', 'reason', 'is_active'
         ]
 
     def validate(self, attrs):

@@ -8,6 +8,9 @@ from decimal import Decimal
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger(__name__)
 
 from apps.invoices.models import Invoice
 from apps.credit_notes.models import CreditNote
@@ -26,6 +29,10 @@ def dashboard(request):
     Endpoint pour le dashboard avec statistiques générales
     """
     try:
+        logger.info("=== DASHBOARD REQUEST ===")
+        logger.info(f"User: {request.user}")
+        logger.info(f"Query params: {dict(request.GET)}")
+        
         # Date actuelle
         now = timezone.now()
         current_month = now.month
@@ -35,6 +42,8 @@ def dashboard(request):
         month = request.query_params.get('month')
         year = request.query_params.get('year')
         supplier_id = request.query_params.get('supplier')
+        
+        logger.info(f"Parsed params - supplier_id: {supplier_id}, month: {month}, year: {year}")
         
         # Validate month/year if provided
         if month and year:
@@ -47,19 +56,23 @@ def dashboard(request):
             month = current_month
             year = current_year
         
+        logger.info(f"Using month: {month}, year: {year}")
+        
         # Statistiques générales (toujours sur toute la base, non filtrées)
         total_suppliers = Supplier.objects.filter(is_active=True).count()
         
         # Base querysets pour les KPIs filtrés
         filtered_invoices = Invoice.objects.filter(is_active=True)
-        filtered_credit_notes = CreditNote.objects.filter(is_active=True)
+        filtered_credit_notes = CreditNote.objects.all()
         
         # Apply supplier filter if provided (sauf pour total_suppliers)
         if supplier_id:
             filtered_invoices = filtered_invoices.filter(supplier_id=supplier_id)
             filtered_credit_notes = filtered_credit_notes.filter(supplier_id=supplier_id)
+            logger.info(f"Filtered by supplier_id {supplier_id}")
         
         # Statistiques de toute la base (avec filtres)
+        logger.info("Calculating general stats...")
         total_invoices_all = filtered_invoices.aggregate(
             total=Sum('net_to_pay')
         )['total'] or Decimal('0.00')
@@ -70,7 +83,13 @@ def dashboard(request):
         
         net_all = total_invoices_all - total_credit_notes_all
         
+        logger.info(f"General stats - filtered_invoices count: {filtered_invoices.count()}")
+        logger.info(f"General stats - total_invoices_all: {total_invoices_all}")
+        logger.info(f"General stats - total_credit_notes_all: {total_credit_notes_all}")
+        logger.info(f"General stats - net_all: {net_all}")
+        
         # Statistiques de l'année actuelle (avec filtres)
+        logger.info("Calculating yearly stats...")
         year_invoices = filtered_invoices.filter(year=year)
         year_credit_notes = filtered_credit_notes.filter(year=year)
         
@@ -84,7 +103,13 @@ def dashboard(request):
         
         net_year = total_invoices_year - total_credit_notes_year
         
+        logger.info(f"Yearly stats - year_invoices count: {year_invoices.count()}")
+        logger.info(f"Yearly stats - total_invoices_year: {total_invoices_year}")
+        logger.info(f"Yearly stats - total_credit_notes_year: {total_credit_notes_year}")
+        logger.info(f"Yearly stats - net_year: {net_year}")
+        
         # Statistiques du mois demandé (avec filtres)
+        logger.info("Calculating current month stats...")
         current_month_invoices = filtered_invoices.filter(
             month=month,
             year=year
@@ -105,7 +130,14 @@ def dashboard(request):
         
         net_current_month = total_invoices_current - total_credit_notes_current
         
+        logger.info(f"Current month stats - current_month_invoices count: {current_month_invoices.count()}")
+        logger.info(f"Current month stats - total_invoices_current: {total_invoices_current}")
+        logger.info(f"Current month stats - current_month_credit_notes count: {current_month_credit_notes.count()}")
+        logger.info(f"Current month stats - total_credit_notes_current: {total_credit_notes_current}")
+        logger.info(f"Current month stats - net_current_month: {net_current_month}")
+        
         # Top 5 fournisseurs (avec filtres)
+        logger.info("Calculating top suppliers...")
         top_suppliers = filtered_invoices.values(
             'supplier__name',
             'supplier__code'
@@ -113,69 +145,72 @@ def dashboard(request):
             total_amount=Sum('net_to_pay')
         ).order_by('-total_amount')[:5]
         
+        logger.info(f"Top suppliers count: {len(top_suppliers)}")
+        
         # Dernières factures (avec filtres)
-        recent_invoices = Invoice.objects.filter(
-            is_active=True
-        )
+        logger.info("Calculating recent invoices...")
+        recent_invoices = filtered_invoices
+        logger.info(f"Base recent invoices queryset: {recent_invoices.count()} invoices")
+        
         # Appliquer les mêmes filtres que pour les autres statistiques
         if supplier_id:
             recent_invoices = recent_invoices.filter(supplier_id=supplier_id)
+            logger.info(f"Filtered by supplier_id {supplier_id}: {recent_invoices.count()} invoices")
+            
         if month and year:
             recent_invoices = recent_invoices.filter(month=month, year=year)
+            logger.info(f"Filtered by month {month} year {year}: {recent_invoices.count()} invoices")
         
-        recent_invoices = recent_invoices.select_related('supplier').order_by('-created_at')[:10]
+        recent_invoices = recent_invoices.select_related('supplier').order_by('-invoice_date', '-created_at')[:10]
+        logger.info(f"Final recent invoices after limit: {len(recent_invoices)}")
         
         recent_invoices_data = []
         for invoice in recent_invoices:
-            recent_invoices_data.append({
-                'id': str(invoice.id),
-                'invoice_number': invoice.invoice_number,
-                'supplier_name': invoice.supplier.name,
-                'net_to_pay': float(invoice.net_to_pay),
-                'invoice_date': invoice.invoice_date.isoformat() if invoice.invoice_date else None,
-                'due_date': invoice.due_date.isoformat() if invoice.due_date else None,
-                'status': invoice.status,
-                'notes': invoice.notes,
-                'month': invoice.month,
-                'year': invoice.year,
-                'is_active': invoice.is_active,
-                'created_at': invoice.created_at.isoformat()
-            })
+            # Vérifier que la facture a des données valides
+            if invoice.invoice_number and invoice.supplier and invoice.net_to_pay > 0:
+                recent_invoices_data.append({
+                    'id': str(invoice.id),
+                    'invoice_number': invoice.invoice_number,
+                    'supplier_name': invoice.supplier.name,
+                    'net_to_pay': float(invoice.net_to_pay),
+                    'invoice_date': invoice.invoice_date.isoformat() if invoice.invoice_date else None,
+                    'due_date': invoice.due_date.isoformat() if invoice.due_date else None,
+                    'status': invoice.status,
+                    'notes': invoice.notes,
+                    'month': invoice.month,
+                    'year': invoice.year,
+                    'is_active': invoice.is_active,
+                    'created_at': invoice.created_at.isoformat()
+                })
+            else:
+                logger.warning(f"Invalid invoice skipped: {invoice.invoice_number} - supplier: {invoice.supplier} - amount: {invoice.net_to_pay}")
         
-        # Statistiques du mois actuel (pour compatibilité frontend)
-        current_month_invoices = Invoice.objects.filter(
-            month=current_month,
-            year=current_year,
-            is_active=True
-        )
+        logger.info(f"Valid recent invoices data: {len(recent_invoices_data)}")
         
-        current_month_credit_notes = CreditNote.objects.filter(
-            month=current_month,
-            year=current_year,
-            is_active=True
-        )
-        
-        total_invoices_current = current_month_invoices.aggregate(
-            total=Sum('net_to_pay')
-        )['total'] or Decimal('0.00')
-        
-        total_credit_notes_current = current_month_credit_notes.aggregate(
-            total=Sum('amount')
-        )['total'] or Decimal('0.00')
-        
-        net_current_month = total_invoices_current - total_credit_notes_current
-        
-        return Response({
-            'period': {
-                'current_month': current_month,
-                'current_year': current_year,
-                'month_name': _(f"Month {current_month}")
-            },
-            'filter_info': {
-                'month': month,
-                'year': year,
-                'supplier_id': supplier_id
-            },
+        # Construire la réponse
+        response_data = {
+            'total_suppliers': total_suppliers,
+            'total_invoices_all': float(total_invoices_all),
+            'total_credit_notes_all': float(total_credit_notes_all),
+            'net_all': float(net_all),
+            'total_invoices_year': float(total_invoices_year),
+            'total_credit_notes_year': float(total_credit_notes_year),
+            'net_year': float(net_year),
+            'total_invoices_current': float(total_invoices_current),
+            'total_credit_notes_current': float(total_credit_notes_current),
+            'net_current_month': float(net_current_month),
+            'top_suppliers': [
+                {
+                    'supplier_name': item['supplier__name'],
+                    'supplier_code': item['supplier__code'],
+                    'total_amount': float(item['total_amount'])
+                }
+                for item in top_suppliers
+            ],
+            'recent_invoices': recent_invoices_data,
+            'current_month': current_month,
+            'current_year': current_year,
+            # Ajouter la structure overview pour compatibilité frontend
             'overview': {
                 'total_suppliers': total_suppliers,
                 'current_month': {
@@ -199,23 +234,22 @@ def dashboard(request):
                     'invoice_count': year_invoices.count(),
                     'credit_note_count': year_credit_notes.count()
                 }
-            },
-            'top_suppliers': [
-                {
-                    'supplier_name': item['supplier__name'],
-                    'supplier_code': item['supplier__code'],
-                    'total_amount': float(item['total_amount'])
-                }
-                for item in top_suppliers
-            ],
-            'recent_invoices': recent_invoices_data,
-            'status': 'healthy'
-        })
+            }
+        }
+        
+        logger.info(f"Final response data keys: {list(response_data.keys())}")
+        logger.info(f"Recent invoices count in response: {len(response_data['recent_invoices'])}")
+        logger.info("=== DASHBOARD RESPONSE SENT ===")
+        
+        return Response(response_data)
         
     except Exception as e:
+        logger.error(f"Dashboard error: {str(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return Response({
-            'error': f'Erreur lors de la génération du dashboard: {str(e)}',
-            'status': 'error'
+            'error': str(e),
+            'message': 'Erreur lors du chargement du tableau de bord'
         }, status=500)
 
 

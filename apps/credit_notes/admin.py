@@ -9,10 +9,10 @@ class CreditNoteAdmin(admin.ModelAdmin):
     
     list_display = [
         'credit_note_number', 'supplier', 'credit_note_date',
-        'amount', 'status', 'is_active', 'created_at'
+        'amount', 'is_active', 'created_at'
     ]
     list_filter = [
-        'supplier', 'month', 'year', 'status', 'is_active',
+        'supplier', 'month', 'year', 'is_active',
         'created_at', 'credit_note_date'
     ]
     search_fields = [
@@ -43,11 +43,6 @@ class CreditNoteAdmin(admin.ModelAdmin):
                 'month', 'year'
             ),
             'classes': ('collapse',)
-        }),
-        (_('Statut'), {
-            'fields': (
-                'status', 'is_active',
-            )
         }),
         (_('Audit'), {
             'fields': (

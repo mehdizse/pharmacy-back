@@ -48,18 +48,6 @@ class CreditNote(models.Model):
         null=True,
         verbose_name=_('Motif')
     )
-
-    class Status(models.TextChoices):
-        DRAFT = 'DRAFT', _('Brouillon')
-        PENDING = 'PENDING', _('En attente')
-        APPLIED = 'APPLIED', _('Appliqué')
-
-    status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.DRAFT,
-        verbose_name=_('Statut')
-    )
     
     month = models.PositiveSmallIntegerField(
         verbose_name=_('Mois')

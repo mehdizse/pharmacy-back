@@ -20,14 +20,14 @@ class CreditNoteViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour la gestion des avoirs
     """
-    queryset = CreditNote.objects.all()
+    queryset = CreditNote.objects.select_related('supplier', 'invoice').all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['supplier', 'month', 'year', 'status', 'is_active']
+    filterset_fields = ['supplier', 'month', 'year']
     search_fields = [
         'credit_note_number', 'supplier__name', 'supplier__code', 'motif'
     ]
     ordering_fields = [
-        'credit_note_date', 'created_at', 'updated_at', 'amount', 'status'
+        'credit_note_date', 'created_at', 'updated_at', 'amount'
     ]
     ordering = ['-credit_note_date', '-created_at']
     
@@ -49,16 +49,12 @@ class CreditNoteViewSet(viewsets.ModelViewSet):
             permission_classes = [IsFinanceUser]
         return [permission() for permission in permission_classes]
     
-    def get_queryset(self):
-        """Optimisation des requêtes avec select_related"""
-        return CreditNote.objects.select_related('supplier', 'invoice').all()
-    
     @extend_schema(
         summary="Lister les avoirs",
         description="Lister tous les avoirs avec filtres et recherche"
     )
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(self.queryset)
         page = self.paginate_queryset(queryset)
         
         if page is not None:
@@ -106,31 +102,19 @@ class CreditNoteViewSet(viewsets.ModelViewSet):
     
     @extend_schema(
         summary="Supprimer un avoir",
-        description="Désactiver un avoir (soft delete - Admin uniquement)"
+        description="Supprimer définitivement un avoir (Admin uniquement)"
     )
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.is_active = False
-        instance.save()
+        credit_note_number = instance.credit_note_number
+        supplier_name = instance.supplier.name
+        
+        # Suppression définitive
+        instance.delete()
         
         return Response({
-            'message': _('Avoir désactivé avec succès')
+            'message': _('Avoir "{}" du fournisseur "{}" supprimé définitivement').format(credit_note_number, supplier_name)
         }, status=status.HTTP_200_OK)
-    
-    @extend_schema(
-        summary="Réactiver un avoir",
-        description="Réactiver un avoir désactivé (Admin uniquement)"
-    )
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminUser])
-    def reactivate(self, request, pk=None):
-        """Réactiver un avoir"""
-        credit_note = self.get_object()
-        credit_note.is_active = True
-        credit_note.save()
-        
-        return Response({
-            'message': _('Avoir réactivé avec succès')
-        })
     
     @extend_schema(
         summary="Statistiques par fournisseur",
@@ -142,7 +126,7 @@ class CreditNoteViewSet(viewsets.ModelViewSet):
         month = request.query_params.get('month')
         year = request.query_params.get('year')
         
-        queryset = self.get_queryset().filter(is_active=True)
+        queryset = self.queryset
         
         if month:
             queryset = queryset.filter(month=month)
@@ -186,10 +170,9 @@ class CreditNoteViewSet(viewsets.ModelViewSet):
                 'error': _('Paramètres month et year invalides')
             }, status=400)
         
-        queryset = self.get_queryset().filter(
+        queryset = self.queryset.filter(
             month=month,
-            year=year,
-            is_active=True
+            year=year
         )
         
         totals = queryset.aggregate(
