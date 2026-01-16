@@ -182,7 +182,7 @@ CORS_ALLOWED_ORIGINS = config(
 )
 
 # Allow all origins for development (remove this in production)
-CORS_ALLOW_ALL_ORIGINS = config("DEBUG", default=False, cast=bool)
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=True, cast=bool)
 
 CORS_ALLOW_CREDENTIALS = True
 
