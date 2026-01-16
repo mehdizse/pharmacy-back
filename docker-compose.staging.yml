@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: pharmacy_staging
+      POSTGRES_USER: staging_user
+      POSTGRES_PASSWORD: votre_password
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: .
+    container_name: pharmacy_backend_staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://staging_user:votre_password@db:5432/pharmacy_staging
+    env_file:
+      - .env.staging
+    depends_on:
+      - db
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-staging.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_staging_data:
+  static_volume:
+  media_volume:

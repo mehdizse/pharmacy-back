@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: pharmacy_staging
+      POSTGRES_USER: staging_user
+      POSTGRES_PASSWORD: votre_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: pharmacy_backend_staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://staging_user:votre_password@db:5432/pharmacy_staging
+      - DEBUG=False
+      - SECRET_KEY=votre-clé-secrète-staging-unique
+      - ALLOWED_HOSTS=localhost,127.0.0.1,votre-ip-vps
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4200
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
