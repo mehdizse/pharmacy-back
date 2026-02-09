@@ -18,9 +18,12 @@ if not SECRET_KEY or SECRET_KEY == 'django-insecure-dev-key':
 # ======================
 # SECURE SETTINGS
 # ======================
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# Permettre de désactiver SSL redirect pour le staging/testing
+DISABLE_SSL_REDIRECT = os.environ.get('DISABLE_SSL_REDIRECT', 'false').lower() == 'true'
+SECURE_SSL_REDIRECT = not DISABLE_SSL_REDIRECT
+SESSION_COOKIE_SECURE = not DISABLE_SSL_REDIRECT
+CSRF_COOKIE_SECURE = not DISABLE_SSL_REDIRECT
+
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
