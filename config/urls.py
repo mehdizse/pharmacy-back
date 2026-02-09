@@ -48,9 +48,6 @@ def api_info(request):
     })
 
 urlpatterns = [
-    # Root endpoint - minimaliste en production
-    path('', api_info, name='api-info'),
-    
     # Admin avec URL personnalisée pour la sécurité
     path('secure-portal/', admin.site.urls),
     
@@ -67,6 +64,10 @@ urlpatterns = [
     path('api/credit-notes/', include('apps.credit_notes.urls')),
     path('api/reports/', include('apps.reports.urls')),
 ]
+
+# API root seulement en développement
+if settings.DEBUG:
+    urlpatterns.insert(0, path('', api_info, name='api-info'))
 
 # Static files for production (WhiteNoise)
 if not settings.DEBUG:
