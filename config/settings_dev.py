@@ -44,8 +44,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:4200",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "http://167.86.69.173:8000",  # Pour tester le backend distant
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # En développement, tout autoriser
 
 # ======================
 # CSRF TRUSTED ORIGINS - DEV
@@ -66,6 +68,14 @@ CSRF_COOKIE_SECURE = False
 SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
+
+# ======================
+# API DOCS - DEVELOPMENT
+# ======================
+# Garder les API docs activées en développement
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 # ======================
 # LOGGING - DEV

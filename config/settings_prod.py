@@ -51,23 +51,24 @@ MIDDLEWARE = [
 # CORS - PRODUCTION
 # ======================
 def get_cors_origins():
-    """Get and validate CORS origins"""
-    origins_str = os.environ.get('CORS_ALLOWED_ORIGINS', 'https://localhost:3000,https://localhost:4200')
+    """Retourne les origines autorisées selon l'environnement"""
+    allowed_origins = [
+        "http://167.86.69.173",
+        "https://167.86.69.173",
+    ]
     
-    # Éviter les chaînes vides
-    if not origins_str or not origins_str.strip():
-        return ['https://localhost:3000', 'https://localhost:4200']
+    # En développement, autoriser localhost
+    if os.environ.get('DJANGO_ENVIRONMENT') == 'development':
+        allowed_origins.extend([
+            "http://localhost:3000",
+            "http://localhost:4200", 
+            "http://localhost:8443",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:4200",
+            "http://127.0.0.1:8443",
+        ])
     
-    origins = origins_str.split(',')
-    validated_origins = [origin.strip() for origin in origins if origin.strip()]
-    
-    # Filtrer les chaînes vides et valider le format
-    validated_origins = [origin for origin in validated_origins if origin and ('://' in origin)]
-    
-    if not validated_origins:
-        raise ValueError("CORS_ALLOWED_ORIGINS must be set in production")
-    
-    return validated_origins
+    return allowed_origins
 
 CORS_ALLOWED_ORIGINS = get_cors_origins()
 CORS_ALLOW_ALL_ORIGINS = False  # TOUJOURS False en production
