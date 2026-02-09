@@ -83,7 +83,7 @@ MIDDLEWARE = [
 # ======================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "apps.accounts.jwt_auth.CustomJWTAuthentication",
+        "apps.accounts.hybrid_auth.HybridTokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
