@@ -36,6 +36,7 @@ X_FRAME_OPTIONS = 'DENY'
 # ======================
 # API STATELESS = PAS de CSRF middleware
 MIDDLEWARE = [
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Sert les fichiers statiques
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",  # OBLIGATOIRE
     "django.contrib.sessions.middleware.SessionMiddleware",
