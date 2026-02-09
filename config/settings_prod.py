@@ -2,7 +2,7 @@
 Production settings for Pharmacy Backend
 NEVER use this file directly - import via environment
 """
-from .settings import *
+from .settings_base import *
 import os
 
 # ======================
