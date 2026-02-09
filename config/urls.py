@@ -42,7 +42,8 @@ urlpatterns = [
     # Root endpoint
     path('', api_info, name='api-info'),
     
-    path('admin/', admin.site.urls),
+    # Admin avec URL personnalisée pour la sécurité
+    path('secure-portal/', admin.site.urls),
     
     # API Documentation - DÉSACTIVÉ EN PRODUCTION
     # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
