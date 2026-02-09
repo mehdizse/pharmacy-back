@@ -32,16 +32,20 @@ class LoginRateThrottle(SimpleRateThrottle):
         """
         Use IP address for throttling
         """
+        # Store request reference for later use
+        self._request = request
         return f"login_throttle_{self.get_ident()}"
     
     def get_ident(self):
         """
         Get client IP address
         """
-        x_forwarded_for = self.request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            return x_forwarded_for.split(',')[0].strip()
-        return self.request.META.get('REMOTE_ADDR', '')
+        if hasattr(self, '_request'):
+            x_forwarded_for = self._request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                return x_forwarded_for.split(',')[0].strip()
+            return self._request.META.get('REMOTE_ADDR', '')
+        return 'unknown'
 
 
 class AdminRateThrottle(SimpleRateThrottle):
