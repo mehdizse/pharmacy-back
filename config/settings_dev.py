@@ -18,8 +18,8 @@ ALLOWED_HOSTS = [
 ]
 
 # Port du backend pour éviter les conflits avec Angular
-# Utilise :8001 pour que :8443 reste libre pour Angular
-RUNSERVER_PORT = 8001
+# Utilise :8000 (standard) et Angular sur :4201
+RUNSERVER_PORT = 8000
 
 # ======================
 # DATABASE - DEV
