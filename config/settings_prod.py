@@ -22,15 +22,15 @@ if not SECRET_KEY or SECRET_KEY == 'django-insecure-dev-key':
 # ======================
 # SECURE SETTINGS
 # ======================
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
-X_FRAME_OPTIONS = 'DENY'
+SECURE_SSL_REDIRECT = False  # Désactivé pour staging HTTP
+SESSION_COOKIE_SECURE = False  # Désactivé pour staging HTTP
+CSRF_COOKIE_SECURE = False  # Désactivé pour staging HTTP
+SECURE_HSTS_SECONDS = 0  # Désactivé pour staging
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+SECURE_CONTENT_TYPE_NOSNIFF = False  # Désactivé pour staging
+SECURE_BROWSER_XSS_FILTER = False  # Désactivé pour staging
+X_FRAME_OPTIONS = 'SAMEORIGIN'  # Moins restrictif
 
 # ======================
 # MIDDLEWARE - PRODUCTION
@@ -38,7 +38,7 @@ X_FRAME_OPTIONS = 'DENY'
 # API STATELESS = PAS de CSRF middleware
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.security.SecurityMiddleware",  # OBLIGATOIRE
+    # "django.middleware.security.SecurityMiddleware",  # Désactivé pour diagnostic
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
