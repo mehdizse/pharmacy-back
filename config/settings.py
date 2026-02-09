@@ -110,7 +110,7 @@ SPECTACULAR_SETTINGS = {
 # Configuration dynamique des CORS depuis les variables d'environnement
 cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins if origin.strip()]
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = False  # False pour API stateless
 
 # ======================
 # DEFAULT FIELD

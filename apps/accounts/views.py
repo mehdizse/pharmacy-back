@@ -60,21 +60,31 @@ class UserLoginView(generics.GenericAPIView):
         responses={200: UserProfileSerializer}
     )
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        
-        # Créer ou récupérer le token
-        token, created = Token.objects.get_or_create(user=user)
-        
-        # Connexion de l'utilisateur
-        login(request, user)
-        
-        return Response({
-            'user': UserProfileSerializer(user).data,
-            'token': token.key,
-            'message': _('Connexion réussie')
-        })
+        try:
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                print(f"Login validation errors: {serializer.errors}")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            user = serializer.validated_data['user']
+            
+            # Créer ou récupérer le token
+            token, created = Token.objects.get_or_create(user=user)
+            
+            # Connexion de l'utilisateur
+            login(request, user)
+            
+            return Response({
+                'user': UserProfileSerializer(user).data,
+                'token': token.key,
+                'message': _('Connexion réussie')
+            })
+        except Exception as e:
+            print(f"Login error: {str(e)}")
+            return Response(
+                {'error': 'Erreur lors de la connexion'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserLogoutView(generics.GenericAPIView):
