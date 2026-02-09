@@ -108,6 +108,11 @@ WHITENOISE_ROOT = STATIC_ROOT
 WHITENOISE_USE_FINDERS = True
 
 # ======================
+# ADMIN THEME
+# ======================
+ADMIN_THEME = 'jazzmin'
+
+# ======================
 # ALLOWED HOSTS
 # ======================
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
