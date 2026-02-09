@@ -87,7 +87,8 @@ def get_cors_origins():
     return validated_origins
 
 CORS_ALLOWED_ORIGINS = get_cors_origins()
-CORS_ALLOW_ALL_ORIGINS = os.environ.get('DJANGO_ENVIRONMENT') != 'production'  # True en staging/dev
+# PRODUCTION : Jamais autoriser toutes les origines !
+CORS_ALLOW_ALL_ORIGINS = False  # TOUJOURS False en production
 CORS_ALLOW_CREDENTIALS = False  # False pour API stateless
 
 # ======================
