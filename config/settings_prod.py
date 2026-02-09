@@ -17,10 +17,6 @@ print(f"==============================")
 # ======================
 DEBUG = False
 
-# Force production mode
-if DEBUG:
-    raise ValueError("DEBUG=True is not allowed in production!")
-
 # Validate SECRET_KEY
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY or SECRET_KEY == 'django-insecure-dev-key':
@@ -29,15 +25,15 @@ if not SECRET_KEY or SECRET_KEY == 'django-insecure-dev-key':
 # ======================
 # SECURE SETTINGS
 # ======================
-SECURE_SSL_REDIRECT = False  # Désactivé pour staging HTTP
-SESSION_COOKIE_SECURE = False  # Désactivé pour staging HTTP
-CSRF_COOKIE_SECURE = False  # Désactivé pour staging HTTP
-SECURE_HSTS_SECONDS = 0  # Désactivé pour staging
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-SECURE_HSTS_PRELOAD = False
-SECURE_CONTENT_TYPE_NOSNIFF = False  # Désactivé pour staging
-SECURE_BROWSER_XSS_FILTER = False  # Désactivé pour staging
-X_FRAME_OPTIONS = 'SAMEORIGIN'  # Moins restrictif
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
 
 # ======================
 # MIDDLEWARE - PRODUCTION
@@ -45,7 +41,7 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'  # Moins restrictif
 # API STATELESS = PAS de CSRF middleware
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    # "django.middleware.security.SecurityMiddleware",  # Désactivé pour diagnostic
+    "django.middleware.security.SecurityMiddleware",  # OBLIGATOIRE
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -71,30 +67,12 @@ def get_cors_origins():
     # Filtrer les chaînes vides et valider le format
     validated_origins = [origin for origin in validated_origins if origin and ('://' in origin)]
     
-    # Ajouter des origines par défaut pour le staging/developement
-    if os.environ.get('DJANGO_ENVIRONMENT') != 'production':
-        # En staging/dev, autoriser plus d'origines
-        default_origins = [
-            'http://localhost:3000', 'http://localhost:4200', 'http://localhost:8000',
-            'https://localhost:3000', 'https://localhost:4200',
-            'http://127.0.0.1:3000', 'http://127.0.0.1:4200', 'http://127.0.0.1:8000',
-            'http://167.86.69.173:3000', 'http://167.86.69.173:4200', 'http://167.86.69.173:8000',
-            'https://167.86.69.173:3000', 'https://167.86.69.173:4200', 'https://167.86.69.173:8000',
-            # Ajouter des origines potentielles pour le frontend
-            'http://167.86.69.173', 'https://167.86.69.173',
-            'http://votre-frontend-domain.com', 'https://votre-frontend-domain.com'
-        ]
-        # Combiner avec les origines configurées
-        all_origins = list(set(validated_origins + default_origins))
-        return all_origins
-    
     if not validated_origins:
         raise ValueError("CORS_ALLOWED_ORIGINS must be set in production")
     
     return validated_origins
 
 CORS_ALLOWED_ORIGINS = get_cors_origins()
-# PRODUCTION : Jamais autoriser toutes les origines !
 CORS_ALLOW_ALL_ORIGINS = False  # TOUJOURS False en production
 CORS_ALLOW_CREDENTIALS = False  # False pour API stateless
 
