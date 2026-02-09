@@ -44,10 +44,10 @@ urlpatterns = [
     
     path('admin/', admin.site.urls),
     
-    # API Documentation
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    # API Documentation - DÉSACTIVÉ EN PRODUCTION
+    # path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
     # API Endpoints
     path('api/health/', include('apps.health.urls')),
@@ -67,3 +67,6 @@ if not settings.DEBUG:
 handler404 = 'config.views.custom_404'
 handler500 = 'config.views.custom_500'
 handler403 = 'config.views.custom_403'
+
+# Import pour éviter les erreurs circulaires
+from django.conf import settings
