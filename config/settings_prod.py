@@ -108,9 +108,32 @@ WHITENOISE_ROOT = STATIC_ROOT
 WHITENOISE_USE_FINDERS = True
 
 # ======================
+# API DOCS - PRODUCTION
+# ======================
+# Désactiver les API docs en production pour la sécurité
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = None
+
+# ======================
 # ADMIN THEME
 # ======================
 ADMIN_THEME = 'jazzmin'
+
+# Personnalisation admin pour masquer Django
+ADMIN_SITE_TITLE = "Secure Management Portal"
+ADMIN_SITE_HEADER = "Pharmacy Management System"
+ADMIN_INDEX_TITLE = "Dashboard"
+
+# Masquer les signatures Django
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Pages d'erreur personnalisées
+ERROR_PAGES = {
+    404: 'errors/404.html',
+    500: 'errors/500.html',
+    403: 'errors/403.html',
+}
 
 # ======================
 # ALLOWED HOSTS
