@@ -103,6 +103,10 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+# Configuration WhiteNoise pour debug
+WHITENOISE_ROOT = STATIC_ROOT
+WHITENOISE_USE_FINDERS = True
+
 # ======================
 # ALLOWED HOSTS
 # ======================
