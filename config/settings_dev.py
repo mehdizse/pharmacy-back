@@ -17,6 +17,10 @@ ALLOWED_HOSTS = [
     "0.0.0.0",
 ]
 
+# Port du backend pour éviter les conflits avec Angular
+# Utilise :8001 pour que :8443 reste libre pour Angular
+RUNSERVER_PORT = 8001
+
 # ======================
 # DATABASE - DEV
 # ======================
@@ -39,12 +43,23 @@ DATABASES = {
 # ======================
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://localhost:3000",
     "http://127.0.0.1:3000", 
+    "https://127.0.0.1:3000",
     "http://localhost:4200",
+    "https://localhost:4200",
     "http://127.0.0.1:4200",
+    "https://127.0.0.1:4200",
     "http://localhost:8000",
+    "https://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
+    "http://localhost:8443",
+    "https://localhost:8443",  # Ton Angular frontend
+    "http://127.0.0.1:8443",
+    "https://127.0.0.1:8443",
     "http://167.86.69.173:8000",  # Pour tester le backend distant
+    "https://167.86.69.173:8000",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # En développement, tout autoriser
@@ -54,9 +69,17 @@ CORS_ALLOW_ALL_ORIGINS = True  # En développement, tout autoriser
 # ======================
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
+    "https://127.0.0.1:8000",
     "http://localhost:8000",
+    "https://localhost:8000",
     "http://localhost:4200", 
+    "https://localhost:4200",
     "http://127.0.0.1:4200",
+    "https://127.0.0.1:4200",
+    "http://localhost:8443",
+    "https://localhost:8443",
+    "http://127.0.0.1:8443",
+    "https://127.0.0.1:8443",
 ]
 
 # ======================
