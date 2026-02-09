@@ -71,7 +71,11 @@ def get_cors_origins():
             'http://localhost:3000', 'http://localhost:4200', 'http://localhost:8000',
             'https://localhost:3000', 'https://localhost:4200',
             'http://127.0.0.1:3000', 'http://127.0.0.1:4200', 'http://127.0.0.1:8000',
-            'http://167.86.69.173:3000', 'http://167.86.69.173:4200', 'http://167.86.69.173:8000'
+            'http://167.86.69.173:3000', 'http://167.86.69.173:4200', 'http://167.86.69.173:8000',
+            'https://167.86.69.173:3000', 'https://167.86.69.173:4200', 'https://167.86.69.173:8000',
+            # Ajouter des origines potentielles pour le frontend
+            'http://167.86.69.173', 'https://167.86.69.173',
+            'http://votre-frontend-domain.com', 'https://votre-frontend-domain.com'
         ]
         # Combiner avec les origines configurées
         all_origins = list(set(validated_origins + default_origins))
@@ -83,7 +87,7 @@ def get_cors_origins():
     return validated_origins
 
 CORS_ALLOWED_ORIGINS = get_cors_origins()
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('DJANGO_ENVIRONMENT') != 'production'  # True en staging/dev
 CORS_ALLOW_CREDENTIALS = False  # False pour API stateless
 
 # ======================
