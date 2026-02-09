@@ -3,6 +3,7 @@ Staging settings - simple configuration for debugging
 """
 from .settings_base import *
 import os
+import dj_database_url
 
 print("=== SETTINGS STAGING CHARGÉ ===")
 print(f"DJANGO_ENVIRONMENT: {os.environ.get('DJANGO_ENVIRONMENT')}")
@@ -10,6 +11,23 @@ print(f"DJANGO_ENVIRONMENT: {os.environ.get('DJANGO_ENVIRONMENT')}")
 # Staging configuration
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+
+# Database configuration for staging
+if os.environ.get("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME", "pharmacy_staging"),
+            "USER": os.environ.get("DB_USER", "staging_user"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
+    }
 
 # CORS simple
 CORS_ALLOWED_ORIGINS = [
@@ -31,4 +49,5 @@ MIDDLEWARE = [
 ]
 
 print(f"CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
+print(f"DATABASE ENGINE: {DATABASES['default']['ENGINE']}")
 print("==============================")
