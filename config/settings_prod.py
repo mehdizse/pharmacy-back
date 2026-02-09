@@ -111,7 +111,9 @@ WHITENOISE_USE_FINDERS = True
 # API DOCS - PRODUCTION
 # ======================
 # Désactiver les API docs en production pour la sécurité
-REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = None
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': None,
+}
 
 # ======================
 # ADMIN THEME
