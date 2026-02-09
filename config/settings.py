@@ -1,198 +1,46 @@
 from pathlib import Path
-from decouple import config
-import dj_database_url
+import os
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Environment detection
+ENVIRONMENT = os.environ.get('DJANGO_ENVIRONMENT', 'development')
 
-# ======================
-# CORE SETTINGS
-# ======================
-SECRET_KEY = config("SECRET_KEY", default="django-insecure-dev-key")
-DEBUG = config("DEBUG", default=False, cast=bool)
-
-# Gestion des ALLOWED_HOSTS pour Docker et production
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default="127.0.0.1,localhost,0.0.0.0",
-    cast=lambda v: [s.strip() for s in v.split(",")]
-)
-
-# ======================
-# APPLICATIONS
-# ======================
-INSTALLED_APPS = [
-    # Django core
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-
-    # Third-party
-    "rest_framework",
-    "rest_framework.authtoken",
-    "django_filters",
-    "drf_spectacular",
-    "corsheaders",
-
-    # Local apps
-    "apps.accounts",
-    "apps.suppliers",
-    "apps.invoices",
-    "apps.credit_notes",
-    "apps.reports",
-    "apps.health",
-]
-
-# ======================
-# MIDDLEWARE
-# ======================
-MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
-
-# ======================
-# URL / TEMPLATES
-# ======================
-ROOT_URLCONF = "config.urls"
-
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "config" / "templates"],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
-
-WSGI_APPLICATION = "config.wsgi.application"
-
-# ======================
-# DATABASE
-# ======================
-# Priorité à DATABASE_URL (utilisé par Render et autres plateformes)
-if config("DATABASE_URL", default=None):
-    DATABASES = {
-        "default": dj_database_url.parse(config("DATABASE_URL"))
-    }
+if ENVIRONMENT == 'production':
+    from .settings_prod import *
+elif ENVIRONMENT == 'development':
+    from .settings_dev import *
 else:
-    # Configuration fallback avec variables séparées
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("DB_NAME", default="pharmacy_db"),
-            "USER": config("DB_USER", default="postgres"),
-            "PASSWORD": config("DB_PASSWORD", default="password"),
-            "HOST": config("DB_HOST", default="localhost"),
-            "PORT": config("DB_PORT", default="5432"),
-            "OPTIONS": {
-                "connect_timeout": 60,
+    # Fallback to base settings
+    from .settings_base import *
+    
+    # Basic configuration for unknown environment
+    DEBUG = False
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+    
+    # Database fallback
+    import dj_database_url
+    if os.environ.get("DATABASE_URL"):
+        DATABASES = {
+            "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+        }
+    else:
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": os.environ.get("DB_NAME", "pharmacy_db"),
+                "USER": os.environ.get("DB_USER", "postgres"),
+                "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
+                "HOST": os.environ.get("DB_HOST", "localhost"),
+                "PORT": os.environ.get("DB_PORT", "5432"),
             }
         }
-    }
-
-# ======================
-# AUTH
-# ======================
-AUTH_USER_MODEL = "accounts.User"
-
-AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-]
-
-# ======================
-# INTERNATIONALIZATION
-# ======================
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
-USE_I18N = True
-USE_TZ = True
-
-# ======================
-# STATIC & MEDIA (DEV/PROD)
-# ======================
-STATIC_URL = "/static/"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-# STATIC_ROOT pour Docker/production
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-# ======================
-# LOGGING
-# ======================
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'apps': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'apps.reports': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-}
 
 # ======================
 # DJANGO REST FRAMEWORK
 # ======================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -205,6 +53,17 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Rate limiting
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle"
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
+        "login": "5/minute",
+        "admin": "200/hour"
+    },
 }
 
 # ======================
@@ -214,38 +73,44 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Pharmacy API",
     "DESCRIPTION": "API de gestion des factures et avoirs",
     "VERSION": "1.0.0",
+    "TAGS": [
+        {
+            "name": "Authentication",
+            "description": "Gestion de l'authentification et des utilisateurs"
+        },
+        {
+            "name": "Suppliers",
+            "description": "Gestion des fournisseurs"
+        },
+        {
+            "name": "Invoices",
+            "description": "Gestion des factures fournisseurs"
+        },
+        {
+            "name": "Credit Notes",
+            "description": "Gestion des avoirs fournisseurs"
+        },
+        {
+            "name": "Reports",
+            "description": "Rapports financiers et statistiques"
+        },
+        {
+            "name": "Health",
+            "description": "Vérification de santé du système"
+        }
+    ],
+    "SCHEMA_PATH_PREFIX": "/api/",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "COMPONENT_NO_READ_ONLY_REQUIRED": True,
 }
 
 # ======================
 # CORS SETTINGS
 # ======================
 # Configuration dynamique des CORS depuis les variables d'environnement
-CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS",
-    default="http://localhost:3000,http://127.0.0.1:3000,http://localhost:4200,http://127.0.0.1:4200,http://localhost:8000,http://127.0.0.1:8000,https://frontend-12uy.onrender.com",
-    cast=lambda v: [s.strip() for s in v.split(",")]
-)
-
-# Allow all origins for development (remove this in production)
-CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=True, cast=bool)
-
+cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
-
-# ======================
-# SECURITY (DEV SAFE)
-# ======================
-# Configuration dynamique des CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = config(
-    "CSRF_TRUSTED_ORIGINS",
-    default="http://127.0.0.1:8000,http://localhost:8000,http://localhost:4200,http://127.0.0.1:4200,http://167.86.69.173",
-    cast=lambda v: [s.strip() for s in v.split(",")]
-)
-
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "Lax"
-
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = "Lax"
 
 # ======================
 # DEFAULT FIELD

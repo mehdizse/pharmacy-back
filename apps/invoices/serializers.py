@@ -38,7 +38,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             
             if queryset.exists():
                 raise serializers.ValidationError(
-                    _("Une facture avec ce numéro existe déjà pour ce fournisseur")
+                    "Une facture avec ce numéro existe déjà pour ce fournisseur"
                 )
         return value
     
@@ -49,7 +49,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         # Validation que les montants sont positifs
         if net_to_pay < 0:
             raise serializers.ValidationError({
-                'net_to_pay': _("Le net à payer ne peut être négatif")
+                'net_to_pay': "Le net à payer ne peut être négatif"
             })
         
         return attrs
@@ -62,14 +62,14 @@ class InvoiceSerializer(serializers.ModelSerializer):
         # La date ne peut pas être dans le futur
         if value > timezone.now().date():
             raise serializers.ValidationError(
-                _("La date de facture ne peut être dans le futur")
+                "La date de facture ne peut être dans le futur"
             )
         
         # La date ne peut pas être trop ancienne (plus de 2 ans)
         two_years_ago = timezone.now().date().replace(year=timezone.now().date().year - 2)
         if value < two_years_ago:
             raise serializers.ValidationError(
-                _("La date de facture ne peut être antérieure à 2 ans")
+                "La date de facture ne peut être antérieure à 2 ans"
             )
         
         return value
@@ -112,7 +112,7 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
                 is_active=True
             ).exists():
                 raise serializers.ValidationError(
-                    _("Une facture avec ce numéro existe déjà pour ce fournisseur")
+                    "Une facture avec ce numéro existe déjà pour ce fournisseur"
                 )
         return value
 
@@ -125,20 +125,25 @@ class InvoiceUpdateSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = [
             'invoice_number', 'net_to_pay',
-            'invoice_date', 'due_date', 'status', 'notes', 'is_active'
+            'invoice_date', 'due_date', 'status', 'notes'
         ]
+        read_only_fields = ['id', 'month', 'year', 'created_at', 'updated_at', 'is_active']
     
     def validate_invoice_number(self, value):
         """Validation du numéro de facture unique par fournisseur"""
-        if self.instance and self.instance.supplier:
+        supplier = self.initial_data.get('supplier') or (self.instance.supplier.id if self.instance.supplier else None)
+        if supplier:
             queryset = Invoice.objects.filter(
-                supplier=self.instance.supplier,
+                supplier_id=supplier,
                 invoice_number=value,
                 is_active=True
-            ).exclude(id=self.instance.id)
+            )
+            
+            if self.instance:
+                queryset = queryset.exclude(id=self.instance.id)
             
             if queryset.exists():
                 raise serializers.ValidationError(
-                    _("Une facture avec ce numéro existe déjà pour ce fournisseur")
+                    "Une facture avec ce numéro existe déjà pour ce fournisseur"
                 )
         return value

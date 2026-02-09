@@ -20,7 +20,8 @@ from apps.accounts.permissions import IsFinanceUser
 
 @extend_schema(
     summary="Tableau de bord",
-    description="Statistiques générales pour le dashboard"
+    description="Statistiques générales pour le dashboard",
+    tags=["Reports"]
 )
 @api_view(['GET'])
 @permission_classes([IsFinanceUser])
@@ -258,7 +259,8 @@ def dashboard(request):
     description=(
         "Rapport agrégé sur un mois/année: totaux factures/avoirs et ventilation par fournisseur. "
         "Paramètres requis: month, year"
-    )
+    ),
+    tags=["Reports"]
 )
 @api_view(['GET'])
 @permission_classes([IsFinanceUser])
@@ -367,7 +369,8 @@ def monthly_report(request):
 
 @extend_schema(
     summary="Résumé mensuel par fournisseur",
-    description="Calculer le net mensuel exact par fournisseur : (Σ factures) - (Σ avoirs)"
+    description="Calculer le net mensuel exact par fournisseur : (Σ factures) - (Σ avoirs)",
+    tags=["Reports"]
 )
 @api_view(['GET'])
 @permission_classes([IsFinanceUser])
@@ -507,7 +510,8 @@ def monthly_summary(request):
 
 @extend_schema(
     summary="Requête SQL agrégée exemple",
-    description="Exemple de requête SQL optimisée pour les calculs financiers"
+    description="Exemple de requête SQL optimisée pour les calculs financiers",
+    tags=["Reports"]
 )
 @api_view(['GET'])
 @permission_classes([IsFinanceUser])

@@ -15,6 +15,7 @@ from .serializers import (
     InvoiceUpdateSerializer
 )
 from apps.accounts.permissions import IsFinanceUser, IsAdminUser
+from .permissions import CanAccessInvoice, CanModifyInvoice
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -32,27 +33,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     ]
     ordering = ['-invoice_date', '-created_at']
     
-    def get_serializer_class(self):
-        """Sélection du serializer selon l'action"""
-        if self.action == 'list':
-            return InvoiceListSerializer
-        elif self.action == 'create':
-            return InvoiceCreateSerializer
-        elif self.action in ['update', 'partial_update']:
-            return InvoiceUpdateSerializer
-        return InvoiceSerializer
-    
     def get_permissions(self):
         """Gestion des permissions selon l'action"""
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            permission_classes = [IsAdminUser]
+            permission_classes = [CanModifyInvoice]
         else:
-            permission_classes = [IsFinanceUser]
+            permission_classes = [CanAccessInvoice]
         return [permission() for permission in permission_classes]
     
     def get_queryset(self):
-        """Optimisation des requêtes avec select_related"""
-        return Invoice.objects.select_related('supplier').all()
+        """Filtrage des données selon l'utilisateur"""
+        queryset = Invoice.objects.select_related('supplier').all()
+        
+        # Les non-admins ne voient que les factures actives
+        if not self.request.user.is_admin:
+            queryset = queryset.filter(is_active=True)
+        
+        return queryset
     
     @extend_schema(
         summary="Lister les factures",
@@ -68,6 +65,16 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    
+    def get_serializer_class(self):
+        """Sélection du serializer selon l'action"""
+        if self.action == 'list':
+            return InvoiceListSerializer
+        elif self.action == 'create':
+            return InvoiceCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return InvoiceUpdateSerializer
+        return InvoiceSerializer
     
     @extend_schema(
         summary="Créer une facture",
@@ -98,9 +105,47 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         summary="Mettre à jour une facture",
         description="Mettre à jour les informations d'une facture (Admin uniquement)"
     )
+    @authentication_classes([])
+    @permission_classes([IsAdminUser])
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        
+        # Vérifier si la facture a des avoirs associés (sauf pour les mises à jour mineures)
+        if not partial:
+            # Modification complète (PUT) - vérifier les avoirs
+            from apps.credit_notes.models import CreditNote
+            credit_notes_count = CreditNote.objects.filter(
+                invoice=instance, 
+                is_active=True
+            ).count()
+            
+            if credit_notes_count > 0:
+                return Response({
+                    'error': 'Impossible de modifier cette facture',
+                    'message': f'Cette facture a {credit_notes_count} avoir(s) associé(s). Veuillez supprimer les avoirs avant de modifier la facture.',
+                    'credit_notes_count': credit_notes_count
+                }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # Modification partielle (PATCH) - autoriser certains champs
+            restricted_fields = {'supplier', 'net_to_pay'}
+            modified_fields = set(request.data.keys()) & restricted_fields
+            
+            if modified_fields:
+                from apps.credit_notes.models import CreditNote
+                credit_notes_count = CreditNote.objects.filter(
+                    invoice=instance, 
+                    is_active=True
+                ).count()
+                
+                if credit_notes_count > 0:
+                    return Response({
+                        'error': 'Impossible de modifier ces champs',
+                        'message': f'Les champs {", ".join(modified_fields)} ne peuvent pas être modifiés car cette facture a {credit_notes_count} avoir(s) associé(s).',
+                        'restricted_fields': list(modified_fields),
+                        'credit_notes_count': credit_notes_count
+                    }, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         invoice = serializer.save()
@@ -111,13 +156,30 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         summary="Supprimer une facture",
         description="Désactiver une facture (soft delete - Admin uniquement)"
     )
+    @authentication_classes([])
+    @permission_classes([IsAdminUser])
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        
+        # Vérifier si la facture a des avoirs associés
+        from apps.credit_notes.models import CreditNote
+        credit_notes_count = CreditNote.objects.filter(
+            invoice=instance, 
+            is_active=True
+        ).count()
+        
+        if credit_notes_count > 0:
+            return Response({
+                'error': 'Impossible de désactiver cette facture',
+                'message': f'Cette facture a {credit_notes_count} avoir(s) associé(s). Veuillez supprimer les avoirs avant de désactiver la facture.',
+                'credit_notes_count': credit_notes_count
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
         instance.is_active = False
         instance.save()
         
         return Response({
-            'message': _('Facture désactivée avec succès')
+            'message': 'Facture désactivée avec succès'
         }, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -132,7 +194,35 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         invoice.save()
         
         return Response({
-            'message': _('Facture réactivée avec succès')
+            'message': 'Facture réactivée avec succès'
+        })
+    
+    @extend_schema(
+        summary="Lister les avoirs d'une facture",
+        description="Obtenir la liste des avoirs associés à cette facture"
+    )
+    @action(detail=True, methods=['get'], permission_classes=[IsFinanceUser])
+    def credit_notes(self, request, pk=None):
+        """Lister les avoirs associés à cette facture"""
+        invoice = self.get_object()
+        from apps.credit_notes.models import CreditNote
+        from apps.credit_notes.serializers import CreditNoteListSerializer
+        
+        credit_notes = CreditNote.objects.filter(
+            invoice=invoice,
+            is_active=True
+        ).select_related('supplier').order_by('-created_at')
+        
+        serializer = CreditNoteListSerializer(credit_notes, many=True)
+        
+        return Response({
+            'invoice': {
+                'id': str(invoice.id),
+                'invoice_number': invoice.invoice_number,
+                'supplier_name': invoice.supplier.name
+            },
+            'credit_notes': serializer.data,
+            'count': credit_notes.count()
         })
     
     @extend_schema(

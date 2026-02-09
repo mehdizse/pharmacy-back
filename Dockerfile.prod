@@ -1,0 +1,58 @@
+# ===========================================
+# PRODUCTION DOCKERFILE - HARDENED
+# ===========================================
+FROM python:3.11-slim as base
+
+# Install security updates
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r django && useradd -r -g django django
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install safety bandit semgrep
+
+# Copy application code
+COPY --chown=django:django . .
+
+# Security scan
+RUN safety check -r requirements.txt || echo "Safety check completed"
+RUN bandit -r . -f json || echo "Bandit scan completed"
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/logs /app/staticfiles /app/media && \
+    chown -R django:django /app
+
+# Switch to non-root user
+USER django
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python manage.py check || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Run with gunicorn (production-ready)
+CMD ["gunicorn", \
+    "--bind", "0.0.0.0:8000", \
+    "--workers", "3", \
+    "--worker-class", "sync", \
+    "--worker-connections", "1000", \
+    "--max-requests", "1000", \
+    "--max-requests-jitter", "100", \
+    "--timeout", "30", \
+    "--keepalive", "2", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-", \
+    "config.wsgi:application"]

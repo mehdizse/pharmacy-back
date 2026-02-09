@@ -15,6 +15,7 @@ from .serializers import (
     UserListSerializer
 )
 from .permissions import IsAdminUser, IsFinanceUser
+from .throttles import LoginRateThrottle
 
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -51,6 +52,7 @@ class UserLoginView(generics.GenericAPIView):
     """
     serializer_class = UserLoginSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [LoginRateThrottle]
     
     @extend_schema(
         summary="Connexion utilisateur",
@@ -79,6 +81,7 @@ class UserLogoutView(generics.GenericAPIView):
     """
     Déconnexion d'un utilisateur
     """
+    serializer_class = UserProfileSerializer  # Ajout du serializer_class
     permission_classes = [permissions.IsAuthenticated]
     
     @extend_schema(
@@ -158,7 +161,8 @@ class UserListView(generics.ListAPIView):
 @permission_classes([IsFinanceUser])
 @extend_schema(
     summary="Vérifier l'authentification",
-    description="Vérifier si l'utilisateur est authentifié et a accès aux données financières"
+    description="Vérifier si l'utilisateur est authentifié et a accès aux données financières",
+    tags=["Authentication"]
 )
 def check_auth(request):
     """
