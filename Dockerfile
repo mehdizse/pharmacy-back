@@ -52,9 +52,6 @@ COPY --from=build /usr/local/bin /usr/local/bin
 # Copie du code source de l'application
 COPY . .
 
-# Rendre le script d'entrée exécutable
-RUN chmod +x ./entrypoint.sh
-
 # Création des répertoires nécessaires et permissions
 RUN mkdir -p /app/staticfiles /app/logs /app/media /app/static && \
     chown -R django:django /app
@@ -65,6 +62,5 @@ USER django
 # Exposition du port
 EXPOSE 8000
 
-# Commande de démarrage avec entrypoint script
-ENTRYPOINT ["./entrypoint.sh"]
+# Commande de démarrage avec gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "config.wsgi:application"]
