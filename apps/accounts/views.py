@@ -60,6 +60,7 @@ class UserLoginView(generics.GenericAPIView):
         responses={200: UserProfileSerializer}
     )
     def post(self, request, *args, **kwargs):
+        print(f"Login request received: {request.data}")
         try:
             serializer = self.get_serializer(data=request.data)
             if not serializer.is_valid():
