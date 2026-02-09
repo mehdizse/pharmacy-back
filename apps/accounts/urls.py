@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/', views.UserRegistrationView.as_view(), name='register'),
     path('login/', views.UserLoginView.as_view(), name='login'),
     path('logout/', views.UserLogoutView.as_view(), name='logout'),
+    path('me/', views.UserProfileView.as_view(), name='me'),  # Ajouté pour Angular
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('users/', views.UserListView.as_view(), name='user-list'),
     path('check-auth/', views.check_auth, name='check-auth'),
