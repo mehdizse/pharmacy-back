@@ -64,9 +64,18 @@ def get_cors_origins():
     # Filtrer les chaînes vides et valider le format
     validated_origins = [origin for origin in validated_origins if origin and ('://' in origin)]
     
-    # Pas d'erreur en développement/test
+    # Ajouter des origines par défaut pour le staging/developement
     if os.environ.get('DJANGO_ENVIRONMENT') != 'production':
-        return validated_origins
+        # En staging/dev, autoriser plus d'origines
+        default_origins = [
+            'http://localhost:3000', 'http://localhost:4200', 'http://localhost:8000',
+            'https://localhost:3000', 'https://localhost:4200',
+            'http://127.0.0.1:3000', 'http://127.0.0.1:4200', 'http://127.0.0.1:8000',
+            'http://167.86.69.173:3000', 'http://167.86.69.173:4200', 'http://167.86.69.173:8000'
+        ]
+        # Combiner avec les origines configurées
+        all_origins = list(set(validated_origins + default_origins))
+        return all_origins
     
     if not validated_origins:
         raise ValueError("CORS_ALLOWED_ORIGINS must be set in production")
