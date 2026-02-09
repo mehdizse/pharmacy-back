@@ -64,6 +64,15 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # En développement, tout autoriser
 
+# Headers CORS additionnels pour Angular
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'x-requested-with',
+    'cache-control',
+    'accept',
+]
+
 # ======================
 # CSRF TRUSTED ORIGINS - DEV
 # ======================
