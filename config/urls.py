@@ -23,6 +23,15 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 
 def api_info(request):
     """API root endpoint with basic information"""
+    # En production, ne pas révéler les endpoints
+    from django.conf import settings
+    if not settings.DEBUG:
+        return JsonResponse({
+            'message': 'Pharmacy Backend API',
+            'status': 'running',
+        })
+    
+    # En développement, montrer les infos complètes
     return JsonResponse({
         'message': 'Pharmacy Backend API',
         'version': '1.0.0',
@@ -39,7 +48,7 @@ def api_info(request):
     })
 
 urlpatterns = [
-    # Root endpoint
+    # Root endpoint - minimaliste en production
     path('', api_info, name='api-info'),
     
     # Admin avec URL personnalisée pour la sécurité
