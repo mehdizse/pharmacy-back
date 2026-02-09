@@ -59,6 +59,15 @@ class UserLoginView(generics.GenericAPIView):
         description="Authentifier un utilisateur et retourner un token",
         responses={200: UserProfileSerializer}
     )
+    def get(self, request, *args, **kwargs):
+        """Test endpoint pour vérifier que l'API fonctionne"""
+        return Response({
+            'message': 'Login endpoint is accessible via GET',
+            'method': request.method,
+            'headers': dict(request.headers),
+            'cors_origin': request.META.get('HTTP_ORIGIN')
+        })
+    
     def post(self, request, *args, **kwargs):
         print(f"Login request received: {request.data}")
         try:
