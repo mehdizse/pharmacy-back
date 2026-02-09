@@ -8,6 +8,8 @@ if ENVIRONMENT == 'production':
     from .settings_prod import *
 elif ENVIRONMENT == 'development':
     from .settings_dev import *
+elif ENVIRONMENT == 'staging':
+    from .settings_staging import *
 else:
     # Fallback to base settings
     from .settings_base import *

@@ -5,6 +5,13 @@ NEVER use this file directly - import via environment
 from .settings import *
 import os
 
+print(f"=== SETTINGS PROD CHARGÉ ===")
+print(f"DJANGO_ENVIRONMENT: {os.environ.get('DJANGO_ENVIRONMENT')}")
+print(f"DEBUG: {DEBUG}")
+print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+print(f"CORS_ALLOWED_ORIGINS: {CORS_ALLOWED_ORIGINS}")
+print(f"==============================")
+
 # ======================
 # SECURITY - PRODUCTION ONLY
 # ======================
