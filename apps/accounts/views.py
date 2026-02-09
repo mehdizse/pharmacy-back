@@ -64,16 +64,12 @@ class UserLoginView(generics.GenericAPIView):
         return Response({
             'message': 'Login endpoint is accessible via GET',
             'method': request.method,
-            'headers': dict(request.headers),
-            'cors_origin': request.META.get('HTTP_ORIGIN')
         })
     
     def post(self, request, *args, **kwargs):
-        print(f"Login request received: {request.data}")
         try:
             serializer = self.get_serializer(data=request.data)
             if not serializer.is_valid():
-                print(f"Login validation errors: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
             user = serializer.validated_data['user']
@@ -90,7 +86,6 @@ class UserLoginView(generics.GenericAPIView):
                 'message': _('Connexion réussie')
             })
         except Exception as e:
-            print(f"Login error: {str(e)}")
             return Response(
                 {'error': 'Erreur lors de la connexion'}, 
                 status=status.HTTP_400_BAD_REQUEST

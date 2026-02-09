@@ -18,9 +18,9 @@ if not SECRET_KEY or SECRET_KEY == 'django-insecure-dev-key':
 # ======================
 # SECURE SETTINGS
 # ======================
-SECURE_SSL_REDIRECT = False  # Désactivé pour test HTTP
-SESSION_COOKIE_SECURE = False  # Désactivé pour test HTTP
-CSRF_COOKIE_SECURE = False  # Désactivé pour test HTTP
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
