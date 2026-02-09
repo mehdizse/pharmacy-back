@@ -19,7 +19,7 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - ALLOWED_HOSTS=localhost,127.0.0.1,${VPS_IP}
       - CORS_ALLOWED_ORIGINS=http://167.86.69.173,https://167.86.69.173
-      - DJANGO_ENVIRONMENT=staging
+      - DJANGO_ENVIRONMENT=production
     depends_on:
       - db
     restart: unless-stopped
