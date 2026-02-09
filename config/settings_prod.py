@@ -70,6 +70,27 @@ CORS_ALLOW_ALL_ORIGINS = False  # TOUJOURS False en production
 CORS_ALLOW_CREDENTIALS = False  # False pour API stateless
 
 # ======================
+# DATABASE - PRODUCTION
+# ======================
+import dj_database_url
+
+if os.environ.get("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("DB_NAME", "pharmacy_staging"),
+            "USER": os.environ.get("DB_USER", "staging_user"),
+            "PASSWORD": os.environ.get("DB_PASSWORD", "password"),
+            "HOST": os.environ.get("DB_HOST", "localhost"),
+            "PORT": os.environ.get("DB_PORT", "5432"),
+        }
+    }
+
+# ======================
 # ALLOWED HOSTS
 # ======================
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
