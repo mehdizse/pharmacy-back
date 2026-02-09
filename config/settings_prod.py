@@ -95,6 +95,15 @@ else:
     }
 
 # ======================
+# STATIC FILES - PRODUCTION
+# ======================
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+# ======================
 # ALLOWED HOSTS
 # ======================
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
